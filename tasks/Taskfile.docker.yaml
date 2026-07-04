@@ -1,6 +1,6 @@
 version: '3'
 vars:
-  IMAGE: diene-bun-consumer:local
+  IMAGE: diene-bun-base:local
 tasks:
   build:
     desc: 'Build the image locally (optional tag suffix via --, e.g. -- 1 -> :local-1)'

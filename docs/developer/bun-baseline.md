@@ -17,9 +17,11 @@ in `docs/developer/standard/`.
 
 New Bun entries:
 
-- `pls unit`, `pls unit:coverage`, `pls unit:watch`
-- `pls int`, `pls int:coverage`, `pls int:watch`
-- `pls test`, `pls test:coverage`, `pls test:watch`
+- `pls test` — all suites, no coverage (unit + int)
+- `pls test:unit`, `pls test:int` — one suite, no coverage
+- `pls test:coverage`, `pls test:unit:coverage`, `pls test:int:coverage` — with
+  per-tier coverage
+- `pls test:watch` — unit watch mode
 - `pls build`
 - `pls deadcode`
 
@@ -34,8 +36,9 @@ Two suites are split by Bun config so the fast path stays Docker-free:
   Slow and Docker-dependent, so it lives on a dedicated path.
 
 The same `tasks/Taskfile.test.yaml` is imported twice from the root `Taskfile.yaml`
-(parameterised by `MODE`/`CONFIG`) to produce the parallel `unit:*` and `int:*`
-namespaces — there is one test recipe, not two.
+(parameterised by `MODE`/`CONFIG`) as the internal `unit:*` and `int:*` namespaces;
+the `test:*` root tasks are thin delegations onto them — there is one test recipe,
+not two.
 
 Prettier owns formatting. Biome is lint-only. Biome and Knip are declared in
 `package.json`, locked by `bun.lock`, and invoked from `./node_modules/.bin` in
@@ -43,10 +46,11 @@ pre-commit.
 
 ## Coverage gates
 
-- Unit coverage: `coverage/unit/lcov.info`.
-- Integration coverage: `coverage/int/lcov.info`. The integration suite excludes
-  `src/index.ts` and `src/lib/**` (covered by the unit suite) via
-  `coveragePathIgnorePatterns` in `bunfig.int.toml`.
+- Unit coverage: `coverage/unit/lcov.info` — the `src/lib` domain ledger (100%
+  goal).
+- Integration coverage: `coverage/int/lcov.info` — the `src/adapters` ledger.
+  Each bunfig scopes its ledger via `coveragePathIgnorePatterns` (bun has no
+  include mode).
 - The local coverage artifact is blocking.
 - Codecov upload is non-blocking and split by `unit` / `int` flags.
 - `codecov.yml` thresholds are informational by default.
@@ -78,7 +82,7 @@ template is expected to adapt:
 - **Package metadata** — `package.json` `name`/`description`.
 - **Coverage thresholds** — `codecov.yml` and any Bun thresholds added later.
 - **Docker runtime entrypoint** — `infra/Dockerfile` `ENTRYPOINT`.
-- **Badges / template promotion** — the `AtomiCloud/diene.bun-consumer` paths in
+- **Badges / template promotion** — the `AtomiCloud/diene.bun-base` paths in
   `README.md` badges are rewritten on promotion.
 - **Sample source/tests** — `src/lib`, `src/adapters`, `src/index.ts`, and the
   matching `tests/` suites are illustrative and replaced per service.
